@@ -1,8 +1,16 @@
 # Component Inventory · 元件库存管理
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.7+-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+
 [简体中文](README.md) | **English**
 
 An electronic component inventory manager for hardware engineers.
+
+![Main window](assets/screenshot_main.png)
+
+![Edit part dialog](assets/screenshot_edit.png)
 
 > **The app UI itself is bilingual.** Switch to English in
 > **Settings → General → UI Language** — it takes effect immediately, no restart.
