@@ -10,6 +10,8 @@
 
 ![主界面](assets/screenshot_main.png)
 
+![编辑元件](assets/screenshot_edit.png)
+
 **核心特点**
 
 - 输入**嘉立创 C 号**即可自动抓取元件资料（型号、厂商、封装、分类、参考单价、数据手册）
