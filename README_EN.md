@@ -8,9 +8,9 @@
 
 An electronic component inventory manager for hardware engineers.
 
-![Main window](assets/screenshot_main.png)
+![Main window](assets/screenshot_main_en.png)
 
-![Edit part dialog](assets/screenshot_edit.png)
+![Edit part dialog](assets/screenshot_edit_en.png)
 
 > **The app UI itself is bilingual.** Switch to English in
 > **Settings → General → UI Language** — it takes effect immediately, no restart.
