@@ -1,0 +1,24 @@
+# ---- Python 缓存 ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- 构建产物 ----
+build/
+build_tmp/
+dist/
+发布/
+*.spec
+
+# ---- 用户数据（不要提交）----
+data/
+导出/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
