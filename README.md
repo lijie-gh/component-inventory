@@ -1,8 +1,14 @@
 # 元件库存管理 · Component Inventory
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.7+-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+
 **简体中文** | [English](README_EN.md)
 
 一个给硬件工程师自用的电子元器件库存管理程序。
+
+![主界面](assets/screenshot_main.png)
 
 **核心特点**
 
