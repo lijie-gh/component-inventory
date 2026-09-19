@@ -241,9 +241,11 @@ class PartEditor(tk.Toplevel):
         self._auto_code = lcsc._normalize_code(code)
         self.lbl_fetch.configure(text=T("已识别 C 号，正在自动查询商城资料…"),
                                  fg=W.C_SUBTEXT)
-        self._fetch(silent=True)
+        # 自动查询走「缓存优先」：7 天内查过的直接命中缓存，断网也能填上资料。
+        # 想强制取最新，用户手动点「查询商城资料」按钮即可。
+        self._fetch(silent=True, force=False)
 
-    def _fetch(self, silent=False):
+    def _fetch(self, silent=False, force=True):
         code = self.e_code.get().strip()
         if not code:
             if not silent:
@@ -258,7 +260,7 @@ class PartEditor(tk.Toplevel):
         self.lbl_fetch.configure(text=T("正在连接嘉立创商城…"), fg=W.C_SUBTEXT)
 
         def task():
-            return lcsc.fetch_part(code, force=True)
+            return lcsc.fetch_part(code, force=force)
 
         def done(data):
             self._fetching = False

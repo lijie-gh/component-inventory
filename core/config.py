@@ -9,7 +9,7 @@ import json
 import datetime
 
 APP_NAME = "元件库存管理"
-VERSION = "1.0.0"
+VERSION = "1.0.1"       # 文件名、窗口标题、「关于」对话框三处都跟着它变
 
 
 def _frozen():
@@ -47,6 +47,7 @@ def _layout(base):
         "EXPORT_DIR": os.path.join(base, "导出"),
         "BACKUP_DIR": os.path.join(base, "data", "backup"),
         "SETTINGS_PATH": os.path.join(base, "data", "settings.json"),
+        "LOG_DIR": os.path.join(base, "data", "logs"),
     }
 
 
@@ -54,7 +55,7 @@ def _init_dirs(base):
     """按 base 算出各路径并建好目录；目录建不出来时返回 None。"""
     paths = _layout(base)
     try:
-        for key in ("DATA_DIR", "EXPORT_DIR", "BACKUP_DIR"):
+        for key in ("DATA_DIR", "EXPORT_DIR", "BACKUP_DIR", "LOG_DIR"):
             os.makedirs(paths[key], exist_ok=True)
     except OSError:
         return None
@@ -76,6 +77,7 @@ DB_PATH = _paths["DB_PATH"]
 EXPORT_DIR = _paths["EXPORT_DIR"]
 BACKUP_DIR = _paths["BACKUP_DIR"]
 SETTINGS_PATH = _paths["SETTINGS_PATH"]
+LOG_DIR = _paths["LOG_DIR"]
 
 # ---------------- 嘉立创商城接口 ----------------
 # 嘉立创 SMT 元件库公开查询接口，支持按 C 号 / 型号 / 名称 检索

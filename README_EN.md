@@ -15,7 +15,7 @@ An electronic component inventory manager for hardware engineers.
 > **The app UI itself is bilingual.** Switch to English in
 > **Settings → General → UI Language** — it takes effect immediately, no restart.
 > The screenshots and menu names below are given in English. Note that
-> **the EXE file name is Chinese** (`元件库存管理_v1.0.0_x64.exe`,
+> **the EXE file name is Chinese** (`元件库存管理_v1.0.1_x64.exe`,
 > where `元件库存管理` = "component inventory"); the `_x64` / `_x86` suffix is the architecture.
 
 **Highlights**
@@ -40,8 +40,8 @@ Grab the file from the **[Releases](../../releases)** page — pick the build th
 
 | Download | For | Notes |
 |---|---|---|
-| **`元件库存管理_v1.0.0_x64.exe`** | 64-bit Windows | virtually every PC — prefer this one |
-| **`元件库存管理_v1.0.0_x86.exe`** | 32-bit Windows | older machines; also runs on 64-bit Windows |
+| **`元件库存管理_v1.0.1_x64.exe`** | 64-bit Windows | virtually every PC — prefer this one |
+| **`元件库存管理_v1.0.1_x86.exe`** | 32-bit Windows | older machines; also runs on 64-bit Windows |
 
 Both builds have **identical features and UI** — the difference is only the bitness they were
 compiled for.
@@ -86,7 +86,7 @@ releases page, so you can check for yourself.
 
 ## 2. Which Build Should I Download?
 
-| | `元件库存管理_v1.0.0_x64.exe` | `元件库存管理_v1.0.0_x86.exe` |
+| | `元件库存管理_v1.0.1_x64.exe` | `元件库存管理_v1.0.1_x86.exe` |
 |---|---|---|
 | Runs on | 64-bit Windows | 32-bit Windows; also 64-bit Windows |
 | File size | about 10 MB | about 8.8 MB |
@@ -226,6 +226,11 @@ This is the core of managing JLCPCB parts and non-JLCPCB parts side by side.
 - Click any column header to sort; click again to reverse the order
 - The **Filter** menu offers the same controls for one-click switching
 
+> **At most 500 rows are drawn at a time.** With tens of thousands of parts, rendering the whole
+> table would slow down every keystroke, so the table shows the first 500 rows (the status bar says
+> so). No data is lost — narrow the filter to see the rest, and sorting always applies to the
+> **full** filtered result set.
+
 ---
 
 ## 6. Stock In / Stock Out
@@ -241,6 +246,9 @@ Select one or more parts in the list (`Ctrl` to multi-select, `Shift` for a rang
 
 Every action accepts an operator and a remark. All movements are recorded in a log you can view
 under **Help → Stock movement log**, and export to CSV separately.
+
+To see the history of **one particular part** (when it came in, who took it), right-click that row
+in the list and choose **View this part's transactions**.
 
 > **Stock and log always agree.** The quantity change and the log entry are a single write; a power
 > failure or crash rolls both back, so you can never end up with "stock went down but nobody knows
@@ -520,6 +528,15 @@ SQLite.
 **Q: The UI font / scaling looks wrong?**
 
 Change the scaling factor in Windows display settings, then restart the app.
+
+**Q: The app hit an error, or a button did nothing. What now?**
+
+Errors are written to `data\logs\app.log` (in the same folder as the EXE). When something really
+goes wrong you get a dialog box, and the status bar mentions it the next time you start.
+
+**Help → Open run log** opens the file directly. Attach it when reporting a problem and it will
+pinpoint the failing step. The log is size-capped, rotates automatically, and deleting it is
+always safe.
 
 **Q: Do I have to use the EXE? Can I just run the source?**
 

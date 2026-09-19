@@ -79,9 +79,12 @@ def main():
             pass
         return 1
 
+    from core import applog
     from ui.main_window import MainWindow
 
     app = MainWindow()
+    # 挂上全局异常兜底（写 data\logs\app.log），并把上一轮的错误摘要交给界面提示
+    app.startup_error = applog.install(app)
     try:
         app.mainloop()
     except KeyboardInterrupt:
@@ -97,6 +100,11 @@ if __name__ == "__main__":
         err = _tb.format_exc()
         print("程序启动失败：\n")
         print(err)
+        try:
+            from core import applog
+            applog.error("启动失败\n%s", err.rstrip())
+        except Exception:
+            pass
         _msgbox("程序启动失败", err[-800:])
         try:
             input("\n按回车键退出…")

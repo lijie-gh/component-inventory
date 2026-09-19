@@ -80,6 +80,9 @@ TABLE = {
     "元件来源：": "Part source:",
     "出入库流水记录": "Stock transaction log",
     "最近 500 条出入库记录": "Latest 500 transactions",
+    "查看该元件的出入库记录": "View this part's transactions",
+    "元件 {0} 的出入库记录（最近 500 条）":
+        "Transactions for {0} (latest 500)",
     "还没有出入库记录": "No transactions yet",
 
     # ---------------------------------------------------------- 来源
@@ -402,6 +405,9 @@ TABLE = {
     "备注 {0}": "Remark {0}",
     "商城同步 {0}": "LCSC synced {0}",
     "参考单价 ¥{0:.4f}": "Ref. price ¥{0:.4f}",
+    "阶梯价 {0}": "Tier prices {0}",
+    "　—　表格最多显示 {0} 行，请缩小筛选范围":
+        "  —  only the first {0} rows are shown; narrow the filter to see the rest",
     "当前库存 {0}（{1}）　库存变更请用「入库/出库/盘点」":
         "Current stock {0} ({1})　use stock in/out or stocktake to change it",
     "已获取（{0}，{1}）：": "Fetched ({0}, {1}):",
@@ -453,6 +459,19 @@ TABLE = {
     "（建议先点「查询商城资料」自动补全信息）":
         "LCSC data hasn't been fetched yet. Save anyway?\n"
         "(click \"Fetch LCSC data\" first to fill in details)",
+
+    # ---------------------------------------------------------- 运行日志与异常兜底
+    "打开运行日志": "Open run log",
+    "还没有日志文件": "No log file yet",
+    "上次运行出现过错误，可点「帮助 → 打开运行日志」查看详情":
+        "The previous run reported an error — see Help → Open run log",
+    "出错了": "Something went wrong",
+    "程序在运行时遇到一个错误，本次操作可能没有完成。\n"
+    "详细信息已写入日志文件，反馈问题时请一并提供。\n\n"
+    "{0}\n\n日志：{1}":
+        "The program hit an error and the last action may not have finished.\n"
+        "Details were written to the log file — please include it when reporting.\n\n"
+        "{0}\n\nLog: {1}",
 
     # ---------------------------------------------------------- 语言 / 汇率 / 接入点
     "界面语言": "Interface language",

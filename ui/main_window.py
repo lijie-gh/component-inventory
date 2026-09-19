@@ -5,7 +5,8 @@ import webbrowser
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
-from core import config, db, fx, lang, lcsc, servers, service, io_utils
+from core import (config, db, fx, lang, lcsc, pricing, servers, service,
+                  io_utils)
 from . import widgets as W
 from .part_editor import PartEditor
 from .stock_dialog import StockDialog
@@ -30,6 +31,15 @@ COLUMNS = [
     ("amount", "库存金额", 72, "e"),
     ("remark", "备注", 100, "w"),
 ]
+
+# 表格一次最多渲染多少行。
+# Treeview 插入 3000 行实测要 1.8 秒，而搜索框是边打字边刷新的 ——
+# 不做上限的话，库一变大打字就像死机（实测 3000 件时敲一个字卡 1.9 秒）。
+# 超出部分数据仍在库里，缩小筛选范围就能看到。
+MAX_ROWS = 500
+
+# 需要按数值排序的列：降序用「键取负 + 不反转」表达（见 sort_by）
+_NUMERIC_COLUMNS = ("total_qty", "ref_price", "amount")
 
 
 class MainWindow(tk.Tk):
@@ -298,6 +308,8 @@ class MainWindow(tk.Tk):
         self.menu.add_command(label=T("盘点"), command=lambda: self.stock_op("adjust"))
         self.menu.add_command(label=T("库位调拨"), command=lambda: self.stock_op("transfer"))
         self.menu.add_separator()
+        self.menu.add_command(label=T("查看该元件的出入库记录"),
+                              command=self.show_part_txns)
         self.menu.add_command(label=T("打开嘉立创商品页"), command=self.open_product_page)
         self.menu.add_command(label=T("打开数据手册"), command=self.open_datasheet)
         self.menu.add_separator()
@@ -343,6 +355,10 @@ class MainWindow(tk.Tk):
                             "抓取资料；非嘉立创购买的元件点选「其它渠道元件」手工录入。"), "warn")
         if removed:
             self.status.set_right(T("已清理 {0} 条过期的商城缓存", removed))
+        # 上一轮运行出过错的话明确提醒一句，别让用户只能靠「点了没反应」猜
+        if getattr(self, "startup_error", ""):
+            self.status.set(T("上次运行出现过错误，可点「帮助 → 打开运行日志」查看详情"),
+                            "warn")
 
     def _startup_tasks(self):
         """启动后的后台任务：自动更新汇率、首次自动检测接入点。
@@ -390,29 +406,38 @@ class MainWindow(tk.Tk):
             return
         self.rows = rows
         self._fill_table(rows, selected_ids)
-        self._update_stats()
+        # _update_stats 顺手把统计结果带回来，避免这里再 db.stats() 算一遍
+        # （里面有一步会对每个元件解析一遍 JSON 阶梯价，元件多时不便宜）
+        st = self._update_stats()
         self._update_category_options()
 
         n = len(rows)
-        total_all = db.stats()
-        if n == total_all["kinds"]:
-            self.status.set(T("共 {0} 种元件", n), "ok")
+        if n == st["kinds"]:
+            text, kind = T("共 {0} 种元件", n), "ok"
         else:
-            self.status.set(T("筛选出 {0} 种元件（库中共 {1} 种）", n, total_all['kinds']), "info")
+            text = T("筛选出 {0} 种元件（库中共 {1} 种）", n, st['kinds'])
+            kind = "info"
+        if n > MAX_ROWS:
+            text += T("　—　表格最多显示 {0} 行，请缩小筛选范围", MAX_ROWS)
+            kind = "warn"
+        self.status.set(text, kind)
         self.status.set_right(T("数据库：{0}", config.DB_PATH))
 
     def _row_id(self, item_id):
-        try:
-            vals = self.tv.item(item_id, "values")
-            return vals[0] if vals else None
-        except Exception:
-            return None
+        """取行的内部 id —— 就是数据库主键的字符串形式。
 
-    def _fill_table(self, rows, reselect_labels=()):
-        for i in self.tv.get_children():
-            self.tv.delete(i)
+        早先这里读的是第一列的值（C 号），而 Treeview 的 iid 是主键，
+        两者永远对不上：刷新时 `exists(iid)` 恒为假，选中行就丢了
+        （表现为出库一件后要重新点一次行）。
+        """
+        return str(item_id) if item_id else None
+
+    def _fill_table(self, rows, reselect_ids=()):
+        # 一次删完，比逐行 delete 快
+        self.tv.delete(*self.tv.get_children())
+        shown = rows[:MAX_ROWS] if len(rows) > MAX_ROWS else rows
         g = float(config.get_setting("low_stock_threshold", 10) or 0)
-        for idx, p in enumerate(rows):
+        for idx, p in enumerate(shown):
             qty = int(p.get("total_qty") or 0)
             thresh = int(p.get("min_qty") or 0) or g
             if qty <= 0:
@@ -438,12 +463,13 @@ class MainWindow(tk.Tk):
                 tags.append("odd")
             self.tv.insert("", "end", iid=str(p["id"]), values=ordered, tags=tags)
 
-        if reselect_labels:
-            for iid in reselect_labels:
+        if reselect_ids:
+            for iid in reselect_ids:
                 if iid and self.tv.exists(iid):
                     self.tv.selection_add(iid)
 
     def _update_stats(self):
+        """刷新顶部卡片，并把统计结果返回给调用方复用。"""
         st = db.stats()
         self.cards["kinds"].set(st["kinds"])
         self.cards["lcsc_kinds"].set(st["lcsc_kinds"])
@@ -456,6 +482,7 @@ class MainWindow(tk.Tk):
                                     W.C_ORANGE if st["low_kinds"] else W.C_SUBTEXT)
         self.cards["out_kinds"].set(st["out_kinds"],
                                     W.C_RED if st["out_kinds"] else W.C_SUBTEXT)
+        return st
 
     def _update_category_options(self):
         cats = [T("全部分类")] + sorted(set(db.all_categories() + config.CATEGORIES))
@@ -497,21 +524,30 @@ class MainWindow(tk.Tk):
         else:
             self.sort_key, self.sort_desc = key, False
 
+        numeric = key in _NUMERIC_COLUMNS
+
         def sort_val(p):
             row = io_utils.part_to_row(p)
             v = row.get(key)
-            if key in ("total_qty",):
-                return -int(v or 0) if self.sort_desc else int(v or 0)
-            if key in ("ref_price", "amount"):
+            if key == "total_qty":
                 try:
-                    return -float(v) if self.sort_desc else float(v)
-                except Exception:
-                    return 0
-            s = str(v or "")
-            return s
+                    n = int(v or 0)
+                except (TypeError, ValueError):
+                    n = 0
+                return -n if self.sort_desc else n
+            if numeric:
+                try:
+                    x = float(v)
+                except (TypeError, ValueError):
+                    x = 0.0
+                return -x if self.sort_desc else x
+            return str(v or "")
 
-        rows = sorted(self.rows, key=sort_val, reverse=(self.sort_desc and
-                                                        key not in ("total_qty",)))
+        # 数值列的降序已经用「键取负」表达，这里就不能再 reverse 一次 ——
+        # 两个取反叠在一起正好抵销，会出现「表头是 ↓、数据还是升序」的怪象。
+        # 文本列没有取负这一说，只能靠 reverse。
+        rows = sorted(self.rows, key=sort_val,
+                      reverse=(self.sort_desc and not numeric))
         self._fill_table(rows)
         arrow = " ↓" if self.sort_desc else " ↑"
         for k, title, _, _ in COLUMNS:
@@ -573,6 +609,10 @@ class MainWindow(tk.Tk):
         ]
         if p.get("ref_price"):
             parts.append(T("参考单价 ¥{0:.4f}", float(p['ref_price'])))
+        # 整张阶梯价（1+ ¥0.135 / 500+ ¥0.105 …），核对「买 500 个多少钱」用
+        tiers = pricing.parse_tiers(p.get("price_tiers"))
+        if tiers:
+            parts.append(T("阶梯价 {0}", pricing.describe_tiers(tiers)))
         if p.get("datasheet"):
             parts.append(T("📄 有数据手册"))
         if p.get("last_fetch"):
@@ -681,17 +721,19 @@ class MainWindow(tk.Tk):
         def done(res):
             ok = sum(1 for v in res.values() if v[0])
             fail = [(k, v[1]) for k, v in res.items() if v[1]]
-            for code, (data, err) in res.items():
-                if not data:
-                    continue
-                p = db.get_part_by_code(code)
-                if not p:
-                    continue
-                patch = {k: v for k, v in data.items()
-                         if not k.startswith("_") and v not in (None, "")}
-                patch["last_fetch"] = config.now_str()
-                patch.pop("source", None)
-                db.update_part(p["id"], patch)
+            # 一次一提交在元件多时会慢很多，包进一个事务
+            with db.transaction():
+                for code, (data, err) in res.items():
+                    if not data:
+                        continue
+                    p = db.get_part_by_code(code)
+                    if not p:
+                        continue
+                    patch = {k: v for k, v in data.items()
+                             if not k.startswith("_") and v not in (None, "")}
+                    patch["last_fetch"] = config.now_str()
+                    patch.pop("source", None)
+                    db.update_part(p["id"], patch)
             self.refresh()
             self.status.set(T("刷新完成：成功 {0} 个，失败 {1} 个", ok, len(fail)),
                             "ok" if not fail else "warn")
@@ -764,6 +806,22 @@ class MainWindow(tk.Tk):
     def show_txns(self):
         TxnsWindow(self)
 
+    def show_part_txns(self):
+        """只看选中那一个元件的出入库记录（不用在全局流水里肉眼翻）。"""
+        p = self._one_part()
+        if not p:
+            return
+        TxnsWindow(self, part_id=p["id"])
+
+    def open_app_log(self):
+        """打开运行日志（出错时给用户一个能直接拿到证据的地方）。"""
+        from core import applog
+        path = applog.log_path()
+        if not os.path.exists(path):
+            W.toast(self, T("还没有日志文件"), "warn")
+            return
+        self._open_path(path)
+
     def open_product_page(self):
         p = self._one_part()
         if not p:
@@ -824,16 +882,24 @@ class MainWindow(tk.Tk):
 class TxnsWindow(tk.Toplevel):
     """出入库流水查看窗口。"""
 
-    def __init__(self, master):
+    def __init__(self, master, part_id=None):
         super().__init__(master)
+        self.part_id = part_id
+        self.part = db.get_part(part_id) if part_id else None
         self.title(T("出入库流水记录"))
         self.configure(bg=W.C_BG)
         self.geometry("900x560")
         W.center_window(self, 900, 560)
 
+        head = T("最近 500 条出入库记录")
+        if self.part:
+            label = (self.part.get("code") or self.part.get("model")
+                     or self.part.get("name") or str(part_id))
+            head = T("元件 {0} 的出入库记录（最近 500 条）", label)
+
         top = tk.Frame(self, bg=W.C_BG)
         top.pack(fill="x", padx=12, pady=10)
-        tk.Label(top, text=T("最近 500 条出入库记录"), bg=W.C_BG, fg=W.C_TEXT,
+        tk.Label(top, text=head, bg=W.C_BG, fg=W.C_TEXT,
                  font=W.FONT_TITLE).pack(side="left")
         W.make_button(top, T("导出流水 CSV"),
                       lambda: self._export()).pack(side="right")
@@ -856,7 +922,7 @@ class TxnsWindow(tk.Toplevel):
         self.tv.tag_configure("OUT", foreground=W.C_RED)
         self.tv.tag_configure("IN", foreground=W.C_GREEN)
 
-        self.txns = db.list_txns(limit=500)
+        self.txns = db.list_txns(part_id=part_id, limit=500)
         for t in self.txns:
             kind = T(config.TXN_LABEL.get(t.get("kind"), t.get("kind")))
             self.tv.insert("", "end", values=(

@@ -373,9 +373,12 @@ def list_parts(keyword="", source_filter="all", stock_filter="all",
     elif stock_filter == "out_of_stock":
         sql.append("\n            AND COALESCE(s.total_qty,0) = 0\n")
     elif stock_filter == "low":
-        # 低于预警线（元件自身阈值 >0 时用自身阈值，否则用全局阈值）
+        # 低于预警线（元件自身阈值 >0 时用自身阈值，否则用全局阈值）。
+        # 必须排除零库存：零库存在 stats() 里单独归入「缺货」卡片，
+        # 若这里也算进来，卡片显示 1 个、筛选出 2 行，用户会怀疑数据不准。
         g = float(config.get_setting("low_stock_threshold", 10) or 0)
         sql.append("""
+            AND COALESCE(s.total_qty,0) > 0
             AND COALESCE(s.total_qty,0) <=
                 CASE WHEN p.min_qty > 0 THEN p.min_qty ELSE ? END
         """)
