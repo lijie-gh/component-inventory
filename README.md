@@ -1,4 +1,4 @@
-# 元件库存管理 · Component Inventory
+﻿# 元件库存管理 · Component Inventory
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.7+-green.svg)
@@ -30,8 +30,8 @@
 
 | 下载这个 | 用在 | 说明 |
 |---|---|---|
-| **`元件库存管理_v1.0.1_x64.exe`** | 64 位 Windows | 现在的电脑几乎都是，优先选它 |
-| **`元件库存管理_v1.0.1_x86.exe`** | 32 位 Windows | 老机器 / 32 位系统；64 位系统上也能跑 |
+| **`component-inventory_v1.0.1_x64.exe`** | 64 位 Windows | 现在的电脑几乎都是，优先选它 |
+| **`component-inventory_v1.0.1_x86.exe`** | 32 位 Windows | 老机器 / 32 位系统；64 位系统上也能跑 |
 
 两版的**功能与界面完全一致**，区别只在编译时的位数。
 
@@ -72,7 +72,7 @@ data\
 
 ## 二、我该下载哪个版本
 
-| | `元件库存管理_v1.0.1_x64.exe` | `元件库存管理_v1.0.1_x86.exe` |
+| | `component-inventory_v1.0.1_x64.exe` | `component-inventory_v1.0.1_x86.exe` |
 |---|---|---|
 | 适用系统 | 64 位 Windows | 32 位 Windows；64 位系统上也能跑 |
 | 文件大小 | 约 10 MB | 约 8.8 MB |

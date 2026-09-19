@@ -1,4 +1,4 @@
-# Component Inventory · 元件库存管理
+﻿# Component Inventory · 元件库存管理
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.7+-green.svg)
@@ -15,7 +15,7 @@ An electronic component inventory manager for hardware engineers.
 > **The app UI itself is bilingual.** Switch to English in
 > **Settings → General → UI Language** — it takes effect immediately, no restart.
 > The screenshots and menu names below are given in English. Note that
-> **the EXE file name is Chinese** (`元件库存管理_v1.0.1_x64.exe`,
+> **the EXE file name is Chinese** (`component-inventory_v1.0.1_x64.exe`,
 > where `元件库存管理` = "component inventory"); the `_x64` / `_x86` suffix is the architecture.
 
 **Highlights**
@@ -40,8 +40,8 @@ Grab the file from the **[Releases](../../releases)** page — pick the build th
 
 | Download | For | Notes |
 |---|---|---|
-| **`元件库存管理_v1.0.1_x64.exe`** | 64-bit Windows | virtually every PC — prefer this one |
-| **`元件库存管理_v1.0.1_x86.exe`** | 32-bit Windows | older machines; also runs on 64-bit Windows |
+| **`component-inventory_v1.0.1_x64.exe`** | 64-bit Windows | virtually every PC — prefer this one |
+| **`component-inventory_v1.0.1_x86.exe`** | 32-bit Windows | older machines; also runs on 64-bit Windows |
 
 Both builds have **identical features and UI** — the difference is only the bitness they were
 compiled for.
@@ -86,7 +86,7 @@ releases page, so you can check for yourself.
 
 ## 2. Which Build Should I Download?
 
-| | `元件库存管理_v1.0.1_x64.exe` | `元件库存管理_v1.0.1_x86.exe` |
+| | `component-inventory_v1.0.1_x64.exe` | `component-inventory_v1.0.1_x86.exe` |
 |---|---|---|
 | Runs on | 64-bit Windows | 32-bit Windows; also 64-bit Windows |
 | File size | about 10 MB | about 8.8 MB |
